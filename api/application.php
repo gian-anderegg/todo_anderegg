@@ -1,6 +1,6 @@
 <?php
 
-    use \Firebase\JWT\JWT;
+    use Firebase\JWT\JWT;
 
     function controller($method, $ressource, $id, $dataFromClient) {
         if ($ressource == 'todo') {
@@ -79,31 +79,42 @@
     function registerUser($user) {
         global $pdo;
 
+        if (checkRegistration($user) === false) {
+            return formatMessage(400, "Username already exists");
+
+        } else {
+            $password = $user->password;
+            $username = $user->username;
+
+            $hashedPassword = password_hash($checkedPassword, PASSWORD_DEFAULT);
+
+            $sql = "INSERT INTO user (username, password) VALUES (:username, :password)";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute(['username' => $username, 'password' => $hashedPassword]);
+
+            if ($stmt->rowCount() > 0) {
+                return formatMessage(200, "User registered successfully");
+            } else {
+                return formatMessage(500, "Registration failed");
+            }
+        }
+    }
+
+    function checkRegistration($user) {
+        global $pdo;
+
+        $password = $user->password;
         $username = $user->username;
-        //$checkedUsername = checkUsername($username);
+        $checkedPassword = checkPassword($password); //?
+        $checkedUsername = checkUsername($username);
 
         $sql = "SELECT * FROM user WHERE username = :username";
         $stmt = $pdo->prepare($sql);
-        $stmt->execute(['username' => $username]);
+        $stmt->execute(['username' => $checkedUsername]);
 
         if ($stmt->rowCount() > 0) {
-            return formatMessage(400, "Username already exists");
+            return false;
         }
-
-        $password = $user->password;
-        $checkedPassword = checkPassword($password);
-        $hashedPassword = password_hash($checkedPassword, PASSWORD_DEFAULT);
-
-        $sql = "INSERT INTO user (username, password) VALUES (:username, :password)";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute(['username' => $username, 'password' => $hashedPassword]);
-
-        if ($stmt->rowCount() > 0) {
-            return formatMessage(200, "User registered successfully");
-        } else {
-            return formatMessage(500, "Registration failed");
-        }
-
     }
 
     function login($login) {
@@ -133,37 +144,36 @@
 
         $jwt = createJWT($user);
 
-        return formatMessage(200, "Login successful: " .$jwt);
+        return formatMessage(200, "Login successful: " . $jwt);
     }
 
     function createJWT($user) {
-            $secret_key = JWT_SECRET;
+        $secret_key = JWT_SECRET;
 
-            $payload = array(
-                'sub' => $user['id'],
-                'username' => $user['username']
-            );
+        $payload = array(
+            'sub' => $user['id'],
+            'username' => $user['username']
+        );
 
-            $expiration_time = time() + 3600000;
+        $expiration_time = time() + 3600000;
 
-            $jwt = JWT::encode(
-                array(
-                    'exp' => $expiration_time,
-                    'iat' => time(),
-                    'nbf' => time(),
-                    'data' => $payload
-                ),
-                $secret_key,
-                'HS256'
-            );
+        $jwt = JWT::encode(
+            array(
+                'exp' => $expiration_time,
+                'iat' => time(),
+                'nbf' => time(),
+                'data' => $payload
+            ),
+            $secret_key,
+            'HS256'
+        );
 
-            return $jwt;
+        return $jwt;
     }
 
     function checkJWT() {
+
     }
 
-    function checkRegistration($user) {
-    }
 
 ?>
