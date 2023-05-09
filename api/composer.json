@@ -1,0 +1,13 @@
+{
+    "name": "schule/api",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Gian Anderegg",
+            "email": "gian051004@gmail.com"
+        }
+    ],
+    "require": {
+        "firebase/php-jwt": "^6.4"
+    }
+}

@@ -1,0 +1,10 @@
+# Turn rewrite engine on
+Options +FollowSymlinks
+RewriteEngine on
+
+# map neat URL to internal URL
+RewriteRule ^todo/$   index.php?ressource=todo&id= [nc,qsa]
+RewriteRule ^todo/([0-9]+)/$   index.php?ressource=todo&id=$1 [nc,qsa]
+RewriteRule ^register/$   index.php?ressource=register&id= [nc,qsa]
+RewriteRule ^login/$   index.php?ressource=login&id= [nc,qsa]
+
