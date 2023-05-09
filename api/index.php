@@ -7,6 +7,8 @@
     include_once("db.php");
     include_once("application.php");
     include_once("rest.php");
+    require_once 'vendor/autoload.php';
+    use \Firebase\JWT\JWT;
 
 
     error_reporting(E_ALL ^ E_NOTICE);
