@@ -10,7 +10,6 @@
     require_once 'vendor/autoload.php';
     use \Firebase\JWT\JWT;
 
-
     error_reporting(E_ALL ^ E_NOTICE);
 
 

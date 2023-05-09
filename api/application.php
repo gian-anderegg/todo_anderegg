@@ -1,6 +1,6 @@
 <?php
 
-    $secretKey = "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoiMTIzNDU2Nzg5MCIsInVzZXJuYW1lIjoiZ2lhbl9hbmRlcmVnZyJ9.fsjRzusU9JtE1FjJH9jEPTi5VJ3ARPqvT133scP178c";
+    use \Firebase\JWT\JWT;
 
     function controller($method, $ressource, $id, $dataFromClient) {
         if ($ressource == 'todo') {
@@ -80,6 +80,8 @@
         global $pdo;
 
         $username = $user->username;
+        //$checkedUsername = checkUsername($username);
+
         $sql = "SELECT * FROM user WHERE username = :username";
         $stmt = $pdo->prepare($sql);
         $stmt->execute(['username' => $username]);
@@ -89,7 +91,8 @@
         }
 
         $password = $user->password;
-        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+        $checkedPassword = checkPassword($password);
+        $hashedPassword = password_hash($checkedPassword, PASSWORD_DEFAULT);
 
         $sql = "INSERT INTO user (username, password) VALUES (:username, :password)";
         $stmt = $pdo->prepare($sql);
@@ -102,7 +105,6 @@
         }
 
     }
-
 
     function login($login) {
         global $pdo;
@@ -124,13 +126,38 @@
         }
 
         // Generate a JWT token
+        $user = array(
+            'id' => 123,
+            'username' => 'my_username'
+        );
 
+        $jwt = createJWT($user);
 
-        return formatMessage(200, "Login successful");
+        return formatMessage(200, "Login successful: " .$jwt);
     }
 
     function createJWT($user) {
+            $secret_key = JWT_SECRET;
 
+            $payload = array(
+                'sub' => $user['id'],
+                'username' => $user['username']
+            );
+
+            $expiration_time = time() + 3600000;
+
+            $jwt = JWT::encode(
+                array(
+                    'exp' => $expiration_time,
+                    'iat' => time(),
+                    'nbf' => time(),
+                    'data' => $payload
+                ),
+                $secret_key,
+                'HS256'
+            );
+
+            return $jwt;
     }
 
     function checkJWT() {
